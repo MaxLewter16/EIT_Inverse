@@ -1,8 +1,12 @@
 clear 
 close all
 
+%decide model type, # of electrodes, number of meshes, and arrangement of
+%subplot
 mdl_type = 'd2C';
 n_electrodes = 8;
+n_trials = 4;
+subplot_dim = [2 2];
 
 %make model w/ 8 electrodes & CEM
 circle = mk_common_model(mdl_type,n_electrodes);
@@ -51,9 +55,9 @@ samples = samples'; %transposing so that each column is one set of samples
 
 %%{
 circle = mk_common_model(mdl_type,n_electrodes);
-for i = 1:4
+for i = 1:n_trials
     img_1t = mk_image(circle,samples(:,i));
-    subplot(2,2,i);
-    show_fem(img_1t);
+    subplot(subplot_dim(1),subplot_dim(2),i);
+    show_polygonsValues(img_1t);
 end
 %%}
