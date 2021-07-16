@@ -1,30 +1,40 @@
 clear 
 close all
 
-circle = mk_common_model('a2C',8); 
+mdl_type = 'd2C';
+n_electrodes = 8;
+
+%make model w/ 8 electrodes & CEM
+circle = mk_common_model(mdl_type,n_electrodes);
+%get number of elements for dynamic function
+n_elem = length(circle.fwd_model.elems);
+%make background conductivity
 img_1 = mk_image(circle,1); 
 
+%getting coords of each elem's center to find distance btwn them
 coordinates =[];
-for element = 1:64
-    nodes = img_1.fwd_model.elems(element,:);
-    x = [];
-    y = [];
-    for z = 1:3
+for element = 1:n_elem
+    nodes = img_1.fwd_model.elems(element,:); %get nodes from corners of each elem
+    x = []; y = [];
+    for z = 1:3 %3 bc each elem has 3 corners 
+        %gets node coordinates for each elem
         x(1,z) = img_1.fwd_model.nodes(nodes(1,z),1);
         y(1,z) = img_1.fwd_model.nodes(nodes(1,z),2);
     end
+    %avg node coordinates
     x_avg = sum(x)/3;
     y_avg = sum(y)/3;
+    %puts all coords into an array
     coordinates(element,1) = x_avg;
     coordinates(element,2) = y_avg;
     
 end
 
-a = .5;
+a = .5; 
 b = .2; %smoothness parameter
 covar = [];
-for i = 1:64
-    for j = 1:64
+for i = 1:n_elem
+    for j = 1:n_elem
         dist = (coordinates(i,1) - coordinates(j,1))^2 + (coordinates(i,2) - coordinates(j,2))^2;
         if i == j
             c = 1; %a + c = variance
@@ -35,14 +45,15 @@ for i = 1:64
     end
 end
 
-samples = mvnrnd(ones(64,1),covar,4); %(mu, covariance matrix, number of samples)
-samples = samples'; 
 
-%{
-circle = mk_common_model('a2C',8);
+samples = mvnrnd(ones(n_elem,1),covar,4); %(mu, covariance matrix, number of samples)
+samples = samples'; %transposing so that each column is one set of samples
+
+%%{
+circle = mk_common_model(mdl_type,n_electrodes);
 for i = 1:4
-    img_1t = mk_image(circle,r(:,i));
+    img_1t = mk_image(circle,samples(:,i));
     subplot(2,2,i);
     show_fem(img_1t);
 end
-%}
+%%}
