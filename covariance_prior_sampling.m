@@ -51,13 +51,21 @@ end
 
 
 samples = mvnrnd(ones(n_elem,1),covar,4); %(mu, covariance matrix, number of samples)
-samples = samples'; %transposing so that each column is one set of samples
-
+%samples = samples'; %transposing so that each column is one set of samples
+%Now uses this solution to compute the POD with the wrapper:
+[U_POD, S_POD, V_POD] = pod(samples);
+%%
+%Plots the mode energies
+ModeEnergies=S_POD.^2;
+ModeEnergyFraction=ModeEnergies/sum(ModeEnergies);
+figure('Color','w','Position',[146 620 403 357]);
+bar(1:length(ModeEnergies),ModeEnergyFraction,'k');
+title('Mode Energies');
 %%{
 circle = mk_common_model(mdl_type,n_electrodes);
 for i = 1:n_trials
     img_1t = mk_image(circle,samples(:,i));
     subplot(subplot_dim(1),subplot_dim(2),i);
-    show_polygonsValues(img_1t);
+    show_fem(img_1t);
 end
 %%}
